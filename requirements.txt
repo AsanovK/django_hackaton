@@ -1,0 +1,6 @@
+djangorestframework
+psycopg2-binary
+twilio
+Pillow
+python-decouple
+drf-yasg
