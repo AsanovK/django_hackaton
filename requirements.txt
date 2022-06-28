@@ -7,3 +7,4 @@ drf-yasg
 djangorestframework-simplejwt
 redis
 celery
+python-slugify
