@@ -4,3 +4,6 @@ twilio
 Pillow
 python-decouple
 drf-yasg
+djangorestframework-simplejwt
+redis
+celery

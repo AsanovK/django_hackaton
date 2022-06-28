@@ -3,9 +3,9 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def _create_user(self, phone, password, **extra_fields):
+    def _create(self, password, phone, **extra_fields):
         if not phone:
-            raise ValueError('User must have phone number!')
+            raise ValueError('Users must have phone number')
         user = self.model(phone=phone, **extra_fields)
         user.set_password(password)
         user.save()
@@ -14,12 +14,12 @@ class UserManager(BaseUserManager):
     def create_user(self, password, **extra_fields):
         extra_fields.setdefault('is_active', False)
         extra_fields.setdefault('is_staff', False)
-        return self._create_user(password, **extra_fields)
+        return self._create(password, **extra_fields)
 
     def create_superuser(self, password, **extra_fields):
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_staff', True)
-        return self._create_user(password, **extra_fields)
+        return self._create(password, **extra_fields)
 
 class CustomUser(AbstractBaseUser):
     nickname = models.CharField(max_length=30, unique=True)
