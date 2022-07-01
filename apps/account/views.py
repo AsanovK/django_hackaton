@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
-from .serializers import RegistrationSerializer
+from .serializers import LoginSerializer, RegistrationSerializer, ChangePasswordSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.views import ObtainAuthToken
 
 User = get_user_model()
 
@@ -25,3 +27,22 @@ class ActivationView(APIView):
                 status=200
             )
         return Response('Invalid activation code', status=400)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.set_new_password()
+            
+class LoginView(ObtainAuthToken):
+    serilizer_class = LoginSerializer
+
+# class LogOutView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(serf, request):
+#         user = request.user
+#         Token.objects.filter(user=user).delete()
+#         return Response("Successfully signed out!")

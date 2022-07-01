@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .utils import normalize_phone
 from .tasks import send_activation_sms
 from django.contrib.auth import get_user_model, authenticate
+from .models import CustomUser, UserManager
 
 User = get_user_model()
 
@@ -69,7 +70,7 @@ class LoginSerializer(serializers.Serializer):
         data['user'] = user
         return data
 
-class ChangePassword(serializers.Serializer):
+class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(min_length=6, required=True)
     new_password = serializers.CharField(min_length=6, required=True)
     new_password_confirm = serializers.CharField(min_length=6, required=True)
@@ -94,3 +95,14 @@ class ChangePassword(serializers.Serializer):
         user.set_password(new_pass)
         user.save()
         
+
+# class ForgotPasswordSerializer(serializers.Serializer):
+#     phone = serializers.CharField(required=True)
+
+#     def validate_phone(self, phone):
+#         if not User.objects.filter(phone=phone).exists():
+#             raise serializers.ValidationError('User not found!')
+#         user = User.objects.get(phone=phone)
+#         user.create_activation_code()
+#         send_activation_sms.delay(user.phone, user.activation_code)
+#         return user
