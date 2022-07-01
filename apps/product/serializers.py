@@ -1,10 +1,12 @@
+import re
+from requests import request
 from rest_framework import serializers
-from .models import Product, ProductImage
+from .models import Product, ProductImage, ProductLogo
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ('image', 'logo', )
+        fields = ('image', )
 
     def _get_image_url(self, obj):
         if obj.image:
@@ -18,14 +20,30 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['image'] = [{'image': image.url} for image in instance.pub_images.all()]
-        return rep
-    
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep['image'] = [{'logo': logo.url} for logo in instance.pub_images.all()]
+        rep['image'] = self._get_image_url(instance)
         return rep
 
+
+
+class ProductLogoSerializer(serializers.Serializer):
+    class Meta:
+        models = ProductLogo
+        fields = ('logo', )
+    
+    def _get_image_url(self, obj):
+        if obj.logo:
+            url = obj.logo.url
+            request = self.context.get("request")
+            if request is not None:
+                url = request.build_absolute_url(url)
+        else:
+            url = ""
+        return url
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['logo'] = self._get_image_url(instance)
+        return rep
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,5 +52,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['image'] = ProductImageSerializer(ProductImage.objects.filter(product=instance.id), many=True).data
+        rep['images'] = ProductImageSerializer(ProductImage.objects.filter(product=instance.id), many=True).data
+        rep['images'] = ProductLogoSerializer(ProductLogo.objects.filter(product=instance.id)).data
         return rep

@@ -8,13 +8,13 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderProductSerializer(many=True, write_only=True, required=True)
-    total_cost = serializers.DecimalField(max_digits=10, decimal_places=3, default=0)
+    total_cost = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivery_address = serializers.CharField(max_length=255, required=True)
 
     class Meta:
         model = Order
-        fields = ('items', 'total_cost', 'delivery_address', 'status')
-
+        # fields = ('items', 'total_cost', 'delivery_address', 'status')
+        fields = '__all__'
     def create(self, validated_data):
         request = self.context.get('request')
         items = validated_data.pop('items')

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from apps.product.models import Product, ProductImage
+from apps.product.models import Product, ProductImage, ProductLogo
 
 
 
@@ -10,8 +10,14 @@ class InlineProductImage(admin.TabularInline):
     extra = 1
     fields = ('image',)
 
+class InlineProductLogo(admin.TabularInline):
+    model = ProductLogo
+    extra = 1
+    fields = ('logo',)
+
+
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [InlineProductImage, ]
+    inlines = [InlineProductImage, InlineProductLogo]
     list_display = ('title', 'in_stock', 'price', 'image', 'logo', 'store')
     list_filter = ('category', )
 
@@ -23,9 +29,9 @@ class ProductAdmin(admin.ModelAdmin):
             return ""
 
     def logo(self, obj):
-        log = obj.image.first()
+        log = obj.logo.first()
         if log:
-            return mark_safe(f"<img src='{log.image.url}' width='80' height='80' style='object-fit: contain' /> ")
+            return mark_safe(f"<img src='{log.logo.url}' width='80' height='80' style='object-fit: contain' /> ")
         else:
             return ""
 
