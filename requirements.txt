@@ -8,3 +8,5 @@ djangorestframework-simplejwt
 redis
 celery
 python-slugify
+django-filter
+django-rest-swagger
