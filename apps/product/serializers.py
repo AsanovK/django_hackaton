@@ -1,6 +1,10 @@
 import re
 from requests import request
 from rest_framework import serializers
+from apps.comment.models import Comment
+
+from apps.comment.serializers import CommentSerializer
+from apps.review.serializers import ReviewSerializer
 from .models import Product, ProductImage, ProductLogo
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -54,4 +58,11 @@ class ProductSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['images'] = ProductImageSerializer(ProductImage.objects.filter(product=instance.id), many=True).data
         rep['images'] = ProductLogoSerializer(ProductLogo.objects.filter(product=instance.id)).data
+        rep['review'] = ReviewSerializer(instance.review.filter(product=instance.id), many=True).data
+        total_rating = [i.rating for i in instance.review.all()]
+        if len(total_rating) != 0:
+            rep['total_rating'] = sum(total_rating)/len(total_rating)
+        else:
+            rep['total_rating'] = ""
+        rep['comment'] = CommentSerializer(Comment.objects.filter(product_id=instance), many=True).data
         return rep

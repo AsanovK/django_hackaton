@@ -8,7 +8,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderProductSerializer(many=True, write_only=True, required=True)
-    total_cost = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_cost = serializers.ReadOnlyField()
     delivery_address = serializers.CharField(max_length=255, required=True)
 
     class Meta:
