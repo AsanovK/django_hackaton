@@ -20,3 +20,11 @@ class Like(models.Model):
 
     def __str__(self):
         return str(self.like)
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite')
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='favorite')
+    like = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.like)

@@ -1,5 +1,7 @@
 import re
 from rest_framework import serializers
+
+from config.settings import TWILIO_NUMBER
 from .utils import normalize_phone
 from .tasks import send_activation_sms
 from django.contrib.auth import get_user_model, authenticate
@@ -96,13 +98,44 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save()
         
 
-# class ForgotPasswordSerializer(serializers.Serializer):
-#     phone = serializers.CharField(required=True)
+class ForgotPasswordSerializer(serializers.Serializer):
+    nickname = serializers.CharField(required=True)
 
-#     def validate_phone(self, phone):
-#         if not User.objects.filter(phone=phone).exists():
-#             raise serializers.ValidationError('User not found!')
-#         user = User.objects.get(phone=phone)
-#         user.create_activation_code()
-#         send_activation_sms.delay(user.phone, user.activation_code)
-#         return user
+    def validate_email(self, nickname):
+        if not User.objects.filter(nickname=nickname).exists():
+            raise serializers.ValidationError('User not found!')
+        return nickname
+
+    def send_verification_sms(self):
+        print(self.validated_data)
+        nickname = self.validated_data.get('nickname')
+        # print(phone)
+        user = User.objects.get(nickname=nickname)
+        print(user)
+        user.create_activation_code()
+        send_activation_sms(user.phone, user.activation_code)
+
+
+class ForgotPasswordCompleteSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=True)
+    code = serializers.CharField(required=True)
+    password = serializers.CharField(min_length=6, required=True)
+    password_confirmation = serializers.CharField(min_length=6, required=True)
+
+    def validate(self, attrs):
+        phone = attrs.get('phone')
+        code = attrs.get('code')
+        password1 = attrs.get('password')
+        password2 = attrs.get('password_confirmation')
+        if not User.objects.filter(phone=phone, activation_code=code).exists():
+            raise serializers.ValidationError('User not found!')
+        if password1 != password2:
+            raise serializers.ValidationError("Password didn't match")
+        return attrs
+
+    def set_new_password(self):
+        phone = self.validated_data.get('phone')
+        password = self.validated_data.get('password')
+        user = User.objects.get(phone=phone)
+        user.set_password(password)
+        user.save()

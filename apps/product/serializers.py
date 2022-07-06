@@ -1,4 +1,4 @@
-import re
+
 from requests import request
 from rest_framework import serializers
 from apps.comment.models import Comment
@@ -29,17 +29,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 
-class ProductLogoSerializer(serializers.Serializer):
+class ProductLogoSerializer(serializers.ModelSerializer):
     class Meta:
-        models = ProductLogo
+        model = ProductLogo
         fields = ('logo', )
+
     
     def _get_image_url(self, obj):
         if obj.logo:
             url = obj.logo.url
             request = self.context.get("request")
             if request is not None:
-                url = request.build_absolute_url(url)
+                url = request.build_absolute_uri(url)
         else:
             url = ""
         return url
@@ -47,17 +48,25 @@ class ProductLogoSerializer(serializers.Serializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['logo'] = self._get_image_url(instance)
-        return rep
+        return rep    
+    
+   
 
 class ProductSerializer(serializers.ModelSerializer):
+    store = serializers.CharField(required=True)
     class Meta:
         model = Product
         fields = "__all__"
 
+    def validate_store(self, store):
+        if Product.objects.filter(store=store).exists():
+            raise serializers.ValidationError("This store already exists!")
+        return store
+
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['images'] = ProductImageSerializer(ProductImage.objects.filter(product=instance.id), many=True).data
-        rep['images'] = ProductLogoSerializer(ProductLogo.objects.filter(product=instance.id)).data
         rep['review'] = ReviewSerializer(instance.review.filter(product=instance.id), many=True).data
         total_rating = [i.rating for i in instance.review.all()]
         if len(total_rating) != 0:

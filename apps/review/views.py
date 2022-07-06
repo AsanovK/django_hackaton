@@ -13,11 +13,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = IsReviewAuthor
+    
 
     def get_permissions(self):
         if self.action in ['list', 'reetryece']:
             permissions = []
         elif self.action == 'like':
+            permissions = [IsAuthenticated, ]
+        elif self.action == 'favorite':
             permissions = [IsAuthenticated, ]
         else:
             permissions = [IsReviewAuthor, ]
@@ -33,4 +36,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if not like_obj.like:
             status = 'unlike'
         return Response({'status': status})
-        
+
+    @action(detail=True, methods=['POST'])
+    def favorite(self, request, *args, **kwargs):
+        review = self.get_object()
+        favorite_obj, _ = Like.objects.get_or_create(review=review, user=request.user)
+        favorite_obj.like = not favorite_obj.like
+        favorite_obj.save()
+        status = 'favorite'
+        if not favorite_obj.like:
+            status = 'not in the favorites'
+        return Response({'status': status})

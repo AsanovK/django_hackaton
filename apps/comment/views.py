@@ -3,11 +3,12 @@ from rest_framework import generics
 from .models import Comment
 from .serializers import CommentSerializer
 from .permissions import IsCommentAuthor
+from rest_framework.permissions import IsAuthenticated
 
 class CreateCommentView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsCommentAuthor]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

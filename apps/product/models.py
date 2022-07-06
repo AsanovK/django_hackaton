@@ -10,8 +10,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name='Price')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='Product')
     in_stock = models.BooleanField(default=True)
-    quantity = models.PositiveIntegerField(default=True)
-    # logo = models.ImageField(blank=True, null=True, upload_to='images', verbose_name='Logo')
+    quantity = models.PositiveIntegerField(default=1)
     store = models.CharField(max_length=50, verbose_name='Name of store',blank=True, unique=True)
 
 
