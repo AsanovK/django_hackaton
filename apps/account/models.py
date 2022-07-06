@@ -24,7 +24,7 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser):
     nickname = models.CharField(max_length=30, unique=True)
     phone = models.CharField(max_length=14, unique=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=10, blank=True)
 
